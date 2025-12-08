@@ -8,10 +8,11 @@ export default function LayoutWrapper({
   children: React.ReactNode 
 }) {
   const pathname = usePathname();
-  const isAuthPage = pathname === '/login' || pathname === '/register';
+  const isAuthPage = pathname === '/login' || pathname === '/register' ;
+  const isDashboardPage = pathname.startsWith('/dashboard'); // ✅ Quan trọng!
 
-  if (isAuthPage) {
-    return <>{children}</>; // Auth pages: không có MainLayout
+  if (isAuthPage || isDashboardPage) {
+    return <>{children}</>; // Không có MainLayout
   }
 
   return <MainLayout>{children}</MainLayout>; // Các trang khác: có MainLayout

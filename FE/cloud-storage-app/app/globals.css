@@ -3,6 +3,10 @@
 :root {
   /* --purple: #e84393; */
   --purple: #9b59b6;
+  --blue: lightblue;
+  --purple-blue: #a498ce; /* Tím xanh pastel */
+  --purple-pastel: #dda0dd; /* Plum pastel */
+  --lavender: #e6e6fa; /* Lavender siêu nhạt */
 }
 
 @theme inline {

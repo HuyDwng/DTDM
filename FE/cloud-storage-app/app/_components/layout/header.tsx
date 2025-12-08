@@ -24,6 +24,7 @@ export default function Header() {
                 <div className="icons">
                     <a href="#" className="fas fa-heart" title="Favorites"></a>
                     <a href="#" className="fas fa-shopping-cart" title="Cart"></a>
+                    <Link href="/dashboard" className="fas fa-home" title="Dashboard"></Link>
                     <Link href="/login" className="fas fa-user" title="Login"></Link>
                     <Link href="/register" className="fas fa-user-plus" title="Register"></Link>
                 </div>
