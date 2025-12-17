@@ -1,14 +1,8 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./dashboard.css";
 
 export default function Dashboard() {
-  const [sidebarActive, setSidebarActive] = useState(false);
-
-  const toggleSidebar = () => {
-    setSidebarActive(!sidebarActive);
-  };
-
   // Toggle dropdown menu với auto positioning
   const toggleDropdown = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
@@ -56,60 +50,24 @@ export default function Dashboard() {
     }
   };
 
+  // Cập nhật thanh tiến trình lưu trữ khi component được mount
+  // Fetch API sau
+  useEffect(() => {
+    const used = 90;
+    const total = 100;
+    const percent = (used / total) * 100;
+
+    const barMask = document.querySelector('.bar-mask') as HTMLElement;
+    const storageText = document.querySelector('.storage-text') as HTMLElement;
+    
+    if (barMask && storageText) {
+      barMask.style.width = (100 - percent) + '%';
+      storageText.textContent = `${used}GB / ${total}GB Used`;
+    }
+  }, []);
+
   return (
     <>
-      <aside className={`sidebar ${sidebarActive ? "active" : ""}`}>
-        <div className="sidebar-header">
-          <i className="bi bi-list" id="btn" onClick={toggleSidebar}></i>
-        </div>
-
-        <ul className="sidebar-links">
-          <li>
-            <a href="#">
-              <i className="bi bi-house"></i>
-              <span className="link-name">Home</span>
-            </a>
-            <span className="tooltip">Home</span>
-          </li>
-
-          <li>
-            <a href="/dashboard/files">
-              <i className="bi bi-folder"></i>
-              <span className="link-name">My Files</span>
-            </a>
-            <span className="tooltip">My Files</span>
-          </li>
-          <li>
-            <a href="/dashboard/analytics">
-              <i className="bi bi-bar-chart-line"></i>
-              <span className="link-name">Statistics</span>
-            </a>
-            <span className="tooltip">Statistics</span>
-          </li>
-          <li>
-            <a href="/dashboard/trash">
-              <i className="bi bi-trash"></i>
-              <span className="link-name">Trash</span>
-            </a>
-            <span className="tooltip">Trash</span>
-          </li>
-
-          <li>
-            <a href="/dashboard/settings">
-              <i className="bi bi-gear"></i>
-              <span className="link-name">Settings</span>
-            </a>
-            <span className="tooltip">Settings</span>
-          </li>
-          <li>
-            <a href="#" className="logout-btn">
-              <i className="bi bi-box-arrow-right"></i>
-              <span className="link-name">Logout</span>
-            </a>
-            <span className="tooltip">Logout</span>
-          </li>
-        </ul>
-      </aside>
 
       <main className="home-content">
         <div className="files-grid">

@@ -5,7 +5,11 @@ import './profile.css'
 export default function EditProfile() {
     const [activeTab, setActiveTab] = useState(0)
     const [avatarPreview, setAvatarPreview] = useState('/images/pic1.png')
+    const [sidebarActive, setSidebarActive] = useState(false);
 
+    const toggleSidebar = () => {
+        setSidebarActive(!sidebarActive);
+    };
 
     const tabs = (index: number) => {
         setActiveTab(index)

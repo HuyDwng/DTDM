@@ -479,7 +479,7 @@ body.dark-mode .theme-btn.active {
     background: #e0e0e0;
 }
 
-/* Logout Button */
+/* Logout Button
 .user-dropdown-menu li.logout {
     color: #e74c3c;
 }
@@ -490,7 +490,7 @@ body.dark-mode .theme-btn.active {
 
 .user-dropdown-menu li.logout:hover {
     background: #ffebee;
-}
+} */
 
 /* Sidebar */
 .sidebar{
@@ -576,12 +576,12 @@ body.dark-mode .theme-btn.active {
     color: #ffffff;
 }
 
-.sidebar .link-name{
+.sidebar .link-name, .sidebar .storage-widget{
     opacity: 0;
     pointer-events: none;
 }
 
-.sidebar.active .link-name{
+.sidebar.active .link-name, .sidebar.active .storage-widget{
     opacity: 1;
     pointer-events: auto;
 }
@@ -615,6 +615,73 @@ body.dark-mode .theme-btn.active {
     top: 50%;
 }
 
+.bar-container{
+    position: relative;
+    height: 20px;
+    border-radius: 10px;
+    background: linear-gradient(
+        toright, 
+        green 0%,
+        green 50%,
+        orange 50%,
+        orange 80%,
+        red 80%,
+        red 100%
+        );
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.bar-mask{
+    position: absolute;
+    height: 100%;
+    width: 70%;
+    background: #eee;
+    right: 0;
+    top: 0;
+    transition: width 0.8s ease;
+}
+
+.storage-text{
+    text-align: right;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.legend{
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #555;
+    margin-top: 10px;
+}
+
+.legend-item{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dot{
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+}
+
+.green{
+    background-color: green;
+}
+
+.orange{
+    background-color: orange;
+}
+
+.red{
+    background-color: red;
+}
+
+/* Home Content */
 .home-content{
     top: 70px;
     position: absolute;
@@ -838,3 +905,426 @@ body.dark-mode .theme-btn.active {
     }
 }
 
+/* Upload Dropdown Menu - FIX Z-INDEX */
+.upload-dropdown-menu {
+    position: fixed; /* Đổi từ absolute sang fixed */
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    padding: 8px 0;
+    min-width: 180px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 10000; /* Z-index cao hơn modal */
+}
+
+.upload-dropdown-menu.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.upload-dropdown-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.upload-dropdown-menu li {
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.upload-dropdown-menu li:hover {
+    background: #f5f5f5;
+}
+
+.upload-dropdown-menu li i {
+    font-size: 18px;
+    color: var(--purple);
+}
+
+.upload-dropdown-menu li span {
+    color: #333;
+    font-size: 14px;
+}
+
+/* Dark mode */
+body.dark-mode .upload-dropdown-menu {
+    background: var(--card-dark);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .upload-dropdown-menu li:hover {
+    background: #2d2d44;
+}
+
+body.dark-mode .upload-dropdown-menu li span {
+    color: #e4e4e4;
+}
+
+/* Drag and Drop Upload Area */
+.drag-area {
+    background-color: var(--purple);
+    border: 2px dashed #fff;
+    height: 500px;
+    width: 100%;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.drag-area.active{
+    border: 2px solid #fff;
+}
+
+.drag-area .icon{
+    font-size: 100px;
+    color: #fff;
+}
+
+.drag-area .drag-header{
+    font-size: 30px;
+    font-weight: 500;
+}
+
+.drag-area span{
+    font-size: 25px;
+    font-weight: 500;
+    color: #fff;
+    margin: 10px 0 15px 0;
+}
+
+.drag-area button{
+    padding: 10px 25px;
+    font-size: 20px;
+    font-weight: 500;
+    border: none;
+    outline: none;
+    background: #fff;
+    color: var(--purple);
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* Upload Modal */
+* {
+	border: 0;
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+:root {
+	--hue: 223;
+	--primary1: hsl(var(--hue),90%,5%);
+	--primary9: hsl(var(--hue),90%,40%);
+	--primary10: hsl(var(--hue),90%,50%);
+	--primary11: hsl(var(--hue),90%,60%);
+	--primary18: hsl(var(--hue),90%,90%);
+	--trans-dur: 0.3s;
+	font-size: calc(16px + (20 - 16) * (100vw - 320px) / (1280 - 320));
+}
+
+.uploadmodal {
+	display: grid;
+	overflow: hidden;
+	place-items: center;
+	height: 100%;
+	min-height: 24.5em;
+}
+.upload,
+.upload__finish {
+	max-width: 17em;
+}
+.upload {
+	padding: 1.5em;
+	text-align: center;
+	width: 100%;
+}
+.upload__button {
+	background-color: var(--primary10);
+	border-radius: 0.2em;
+	color: hsl(0,0%,100%);
+	padding: 0.75em 1.5em;
+	width: 100%;
+	transition: background-color 0.15s ease-in-out;
+}
+.upload__button:disabled {
+	cursor: not-allowed;
+	opacity: 0.5;
+}
+.upload__button:focus {
+	outline: transparent;
+}
+.upload__button:not(:disabled):focus-visible,
+.upload__button:not(:disabled):hover {
+	background-color: var(--primary9);
+}
+.upload__bubbles {
+	margin: 0 auto 3em auto;
+	position: relative;
+	height: 8em;
+	width: 8em;
+	z-index: 1;
+}
+.upload__bubble {
+	--dur: 3s; /* to be overridden by JavaScript */
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	width: 2em;
+	height: 2em;
+	transform: translateX(-50%);
+	transform-origin: 50% 100%;
+}
+.upload__bubble:before {
+	background-color: var(--primary11);
+	border-radius: 50%;
+	content: "";
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+.upload__check {
+	display: block;
+	margin: 0 auto 3em auto;
+	width: 8em;
+	height: 8em;
+}
+.upload__cloud-explode,
+.upload__cloud-left,
+.upload__cloud-middle,
+.upload__cloud-right {
+	background-color: hsl(0,0%,100%);
+	position: absolute;
+}
+.upload__cloud-explode,
+.upload__cloud-middle {
+	border-radius: 50%;
+}
+.upload__cloud-explode {
+	display: none;
+	bottom: 0;
+	left: 50%;
+	width: 69em;
+	height: 69em;
+	transform: translate(-50%,1em) scale(0);
+	transform-origin: 50% 100%;
+	z-index: 1;
+}
+.upload__cloud-left,
+.upload__cloud-middle,
+.upload__cloud-right {
+	bottom: 0;
+}
+.upload__cloud-left,
+.upload__cloud-right {
+	width: 6em;
+}
+.upload__cloud-left {
+	border-radius: 2.5em 0 0 2.5em;
+	right: 50%;
+	height: 5em;
+}
+.upload__cloud-middle {
+	overflow: hidden;
+	position: absolute;
+	left: 50%;
+	width: 13em;
+	height: 13em;
+	transform: translate(-50%,0) scale(0.6);
+	transform-origin: 50% 100%;
+	z-index: 2;
+}
+.upload__cloud-right {
+	border-radius: 0 3em 3em 0;
+	left: 50%;
+	height: 6em;
+}
+.upload__feedback {
+	color: hsl(var(--hue),10%,5%);
+	margin-bottom: 4.5em;
+}
+.upload__feedback,
+.upload__feedback + .upload__button {
+	opacity: 0;
+	transform: translateY(100%);
+}
+.upload__finish {
+	margin: auto;
+	padding: 1.5em;
+}
+.upload__progress {
+	opacity: 0;
+}
+.upload__progress {
+	font-size: 3em;
+	margin-bottom: 3rem;
+	min-height: 4.5rem;
+	transform: translateY(25%);
+}
+/* running state */
+.upload--running .upload__cloud-left,
+.upload--running .upload__cloud-middle,
+.upload--running .upload__cloud-right {
+	transition: all 0.5s ease-in-out;
+}
+.upload--running .upload__cloud-left {
+	transform: translateX(2.5em);
+}
+.upload--running .upload__cloud-middle {
+	transform: translate(-50%,1em) scale(1);
+}
+.upload--running .upload__cloud-right {
+	transform: translateX(-2.5em);
+}
+.upload--running .upload__bubble:before {
+	animation: rise var(--dur) linear forwards;
+}
+.upload--running .upload__progress {
+	opacity: 1;
+	transform: translateY(0);
+	transition: all 0.3s ease-in-out;
+}
+/* done state */
+.upload--done .upload__cloud-explode {
+	animation: expand 1s 0.5s ease-in-out forwards;
+	display: flex;
+}
+.upload--done .upload__cloud-middle {
+	animation: slideUp 1.5s 0.5s ease-in-out forwards;
+}
+.upload--done .upload__feedback,
+.upload--done .upload__feedback + .upload__button {
+	animation: fadeSlideUp 0.5s 1.25s ease-in-out forwards;
+}
+.upload--done .upload__feedback + .upload__button {
+	animation-delay: 1.4s;
+}
+.upload--done .upload__check-ring,
+.upload--done .upload__check-line {
+	animation: strokeIn 0.5s 1.25s ease-in-out forwards;
+}
+
+/* Animations */
+@keyframes expand {
+	from {
+		transform: translate(-50%,1em) scale(0.3333); /* 23/69 */
+	}
+	to {
+		transform: translate(-50%,37.25em) scale(1);
+	}
+}
+@keyframes fadeSlideUp {
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+@keyframes rise {
+	to {
+		transform: translateY(-25em);
+	}
+}
+@keyframes strokeIn {
+	to {
+		stroke-dashoffset: 0;
+	}
+}
+@keyframes slideUp {
+	from {
+		transform: translate(-50%,1em);
+	}
+	to {
+		transform: translate(-50%,-23em);
+	}
+}
+
+/* Upload Modal Overlay */
+.upload-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.upload-modal-content {
+  position: relative;
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.close-modal {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.2s;
+  z-index: 10;
+}
+
+.close-modal:hover {
+  color: #000;
+}
+
+/* Dark mode for upload modal */
+body.dark-mode .upload-modal-content {
+  background: var(--card-dark);
+}
+
+body.dark-mode .close-modal {
+  color: #999;
+}
+
+body.dark-mode .close-modal:hover {
+  color: #fff;
+}
+
+body.dark-mode .upload__feedback {
+  color: #e4e4e4;
+}
