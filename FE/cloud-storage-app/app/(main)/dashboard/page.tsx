@@ -50,22 +50,6 @@ export default function Dashboard() {
     }
   };
 
-  // Cập nhật thanh tiến trình lưu trữ khi component được mount
-  // Fetch API sau
-  useEffect(() => {
-    const used = 90;
-    const total = 100;
-    const percent = (used / total) * 100;
-
-    const barMask = document.querySelector('.bar-mask') as HTMLElement;
-    const storageText = document.querySelector('.storage-text') as HTMLElement;
-    
-    if (barMask && storageText) {
-      barMask.style.width = (100 - percent) + '%';
-      storageText.textContent = `${used}GB / ${total}GB Used`;
-    }
-  }, []);
-
   return (
     <>
 

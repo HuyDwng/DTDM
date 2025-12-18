@@ -249,6 +249,33 @@ export default function DashboardLayout({
         }
     }, [])
 
+    // Sửa lại useEffect - chỉ chạy khi sidebar active hoặc sau khi render
+    useEffect(() => {
+        // Delay để đảm bảo DOM đã render
+        const timer = setTimeout(() => {
+            const used = 30; // 
+            const total = 100;
+            const percent = (used / total) * 100;
+
+            const barMask = document.getElementById('barMask') as HTMLElement; // ✅ Dùng ID thay vì querySelector
+            const storageText = document.getElementById('storageText') as HTMLElement;
+            
+            console.log('Bar Mask:', barMask); 
+            console.log('Storage Text:', storageText); 
+            
+            if (barMask && storageText) {
+                barMask.style.width = (100 - percent) + '%';
+                storageText.textContent = `${used}GB / ${total}GB Used`;
+                console.log('Updated!'); 
+            } else {
+                console.log('Elements not found!'); 
+            }
+        }, 100); // 
+
+        return () => clearTimeout(timer);
+    }, [sidebarActive]); 
+
+
     // Đóng dropdown khi click outside
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -413,8 +440,10 @@ export default function DashboardLayout({
                     <span className="link-name">Used Storage</span>
                     </a>
                     <span className="tooltip">Used Storage</span>
+                </li>
+                </ul>
 
-                    <div className="storage-widget">
+                <div className="storage-widget">
                     <div className="bar-container">
                         <div className="bar-mask" id="barMask">
                         </div>
@@ -424,28 +453,25 @@ export default function DashboardLayout({
 
                     <div className="legend">
                         <div className="legend-item">
-                        <div className="dot green">
-                            <span>0-50%: Safe</span>
-                        </div>
+                            <div className="dot green">
+                            </div>       
+                            <span>0-50%: Safe</span>                     
                         </div>
 
                         <div className="legend-item">
-                        <div className="dot orange">
+                            <div className="dot orange">
+                            </div>
                             <span>51-80%: Warning</span>
                         </div>
-                        </div>
 
                         <div className="legend-item">
-                        <div className="dot red">
+                            <div className="dot red">
+                            </div>
                             <span>81-100%: Full</span>
                         </div>
-                        </div>
-                        
+                            
                     </div>
-                    </div>
-
-                </li>
-                </ul>
+                </div>
             </aside>
         )}
 
