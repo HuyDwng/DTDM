@@ -35,6 +35,20 @@ export default function DashboardLayout({
 
     const [sidebarActive, setSidebarActive] = useState(false);
 
+    const [currentUser, setCurrentUser] = useState<{ id: number; name: string; email: string; avatar?: string } | null>(null);
+
+        useEffect(() => {
+    const userStr = localStorage.getItem('user'); // đọc thông tin user đã login
+        if (userStr) setCurrentUser(JSON.parse(userStr));
+    }, []);
+
+    // Xử lý logout
+    const handleLogout = () => {
+        localStorage.removeItem('user'); // Xoá thông tin user
+        setCurrentUser(null);
+        router.push('/login');
+    };
+
     const toggleSidebar = () => {
         setSidebarActive(!sidebarActive);
     };
@@ -107,6 +121,51 @@ export default function DashboardLayout({
             setSelectedFiles(e.dataTransfer.files)
         }
     }
+////////// Upload files to server
+const handleUpload = async () => {
+  if (!selectedFiles) return;
+
+  const token = localStorage.getItem('token');
+  if (!token) {
+    router.push('/login');
+    return;
+  }
+
+  setIsUploading(true);
+  setUploadDone(false);
+  setUploadProgress(0);
+
+  const formData = new FormData();
+  Array.from(selectedFiles).forEach(file => formData.append('file', file));
+
+  try {
+    const res = await fetch('http://localhost:5000/api/files/upload', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    const data = await res.json();
+    console.log('Upload response:', data);
+
+    if (!res.ok) alert('Upload thất bại: ' + data.message);
+
+    // Animation loop
+    const animateUpload = () => {
+      setUploadProgress(prev => {
+        const next = prev + 0.02;
+        if (next < 1) setTimeout(animateUpload, 50);
+        else setUploadDone(true);
+        return next;
+      });
+    };
+    animateUpload();
+  } catch (err) {
+    console.error(err);
+    alert('Upload thất bại');
+    setIsUploading(false);
+  }
+};
+
 
     // Upload modal states
     const [showUploadModal, setShowUploadModal] = useState(false)
@@ -182,21 +241,7 @@ export default function DashboardLayout({
     }
 
     // Start upload - CHỈ khi có file
-    const startUpload = () => {
-        if (isUploading || !selectedFiles) return
-        
-        setIsUploading(true)
-        setUploadProgress(0)
-        setUploadDone(false)
-        bubblesRef.current = []
-        
-        timeoutRef.current = setTimeout(() => {
-            if (circleRef.current) {
-                circleRef.current.style.transitionTimingFunction = "linear"
-            }
-            progressLoop()
-        }, 500)
-    }
+
 
     // Reset upload
     const resetUpload = () => {
@@ -286,13 +331,7 @@ export default function DashboardLayout({
                 setUploadDropdownActive(false)
             }
 
-            // Đóng file dropdown
-            const dropdowns = document.querySelectorAll('.dropdown-menu.active')
-            dropdowns.forEach(dropdown => {
-                if (!dropdown.parentElement?.contains(e.target as Node)) {
-                    dropdown.classList.remove('active')
-                }
-            })
+
 
             // Đóng user menu
             const userMenu = document.querySelector('.user-dropdown-menu')
@@ -329,63 +368,71 @@ export default function DashboardLayout({
             )}
 
                     
-            <div className="header-avatar" onClick={toggleUserMenu}>
-                <img src="/images/pic1.png" alt="User Avatar" />
-                <h2 className='user-name'>User</h2>
+                <div className="header-avatar" onClick={toggleUserMenu}>
+                <img 
+                    src={currentUser?.avatar || "/images/pic1.png"} 
+                    alt="User Avatar" 
+                />
+                <h2 className='user-name'>{currentUser?.name || "User"}</h2>
+
                 {/* User Dropdown Menu */}
                 <div className={`user-dropdown-menu ${userMenuActive ? 'active' : ''}`}>
                     <ul>
-                        <li className="user-info-menu">
-                            <img src="/images/pic1.png" alt="User" />
-                            <div>
-                                <h4>User</h4>
-                                <span>user@email.com</span>
-                            </div>
-                        </li>
-                        <li className="divider"></li>
-                        
-                        <li onClick={() => router.push('/dashboard/profile')}>
-                            <i className="bi bi-person"></i>
-                            <span>Edit Profile</span>
-                        </li>
-                        
-                        <li className="theme-toggle">
-                            <i className="bi bi-palette"></i>
-                            <span>Theme</span>
-                            <div className="theme-options">
-                                <button 
-                                    className={`theme-btn light-mode ${theme === 'light' ? 'active' : ''}`}
-                                    onClick={() => toggleTheme('light')}
-                                >
-                                    <i className="bi bi-sun"></i>
-                                </button>
-                                <button 
-                                    className={`theme-btn dark-mode ${theme === 'dark' ? 'active' : ''}`}
-                                    onClick={() => toggleTheme('dark')}
-                                >
-                                    <i className="bi bi-moon"></i>
-                                </button>
-                            </div>
-                        </li>
-                        
-                        <li onClick={() => router.push('/dashboard/settings')}>
-                            <i className="bi bi-gear"></i>
-                            <span>Settings</span>
-                        </li>
-                        
-                        <li className="divider"></li>
-                        
-                        <li className="logout" onClick={() => {
-                            // Handle logout
-                            console.log('Logging out...')
-                            router.push('/login')
-                        }}>
-                            <i className="bi bi-box-arrow-right"></i>
-                            <span>Logout</span>
-                        </li>
+                    <li className="user-info-menu">
+                        <img 
+                        src={currentUser?.avatar || "/images/pic1.png"} 
+                        alt="User" 
+                        />
+                        <div>
+                        <h4>{currentUser?.name || "User"}</h4>
+                        <span>{currentUser?.email || "user@email.com"}</span>
+                        </div>
+                    </li>
+                    <li className="divider"></li>
+
+                    <li onClick={() => router.push('/dashboard/profile')}>
+                        <i className="bi bi-person"></i>
+                        <span>Edit Profile</span>
+                    </li>
+
+                    <li className="theme-toggle">
+                        <i className="bi bi-palette"></i>
+                        <span>Theme</span>
+                        <div className="theme-options">
+                        <button 
+                            className={`theme-btn light-mode ${theme === 'light' ? 'active' : ''}`}
+                            onClick={() => toggleTheme('light')}
+                        >
+                            <i className="bi bi-sun"></i>
+                        </button>
+                        <button 
+                            className={`theme-btn dark-mode ${theme === 'dark' ? 'active' : ''}`}
+                            onClick={() => toggleTheme('dark')}
+                        >
+                            <i className="bi bi-moon"></i>
+                        </button>
+                        </div>
+                    </li>
+
+                    <li onClick={() => router.push('/dashboard/settings')}>
+                        <i className="bi bi-gear"></i>
+                        <span>Settings</span>
+                    </li>
+
+                    <li className="divider"></li>
+
+                    <li className="logout" onClick={() => {
+                        localStorage.removeItem('token'); // xóa token
+                        localStorage.removeItem('user');  // xóa user
+                        router.push('/login');
+                    }}>
+                        <i className="bi bi-box-arrow-right"></i>
+                        <span>Logout</span>
+                    </li>
                     </ul>
                 </div>
-            </div>
+                </div>
+
         </header>
 
         <div className="container">
@@ -555,7 +602,8 @@ export default function DashboardLayout({
                         <button 
                           className="upload__button start-upload-btn" 
                           type="button" 
-                          onClick={startUpload}
+                          onClick={handleUpload}
+
                         >
                           <i className="bi bi-upload"></i>
                           Start Upload
@@ -632,7 +680,13 @@ export default function DashboardLayout({
               </div>
             </div>
         )}
+            <div
+            className="dashboard-page-wrapper"
+            onClick={(e) => e.stopPropagation()}
+            >
             {children}
+            </div>
+
         </div>
         </>
     )

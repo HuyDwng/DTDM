@@ -37,10 +37,18 @@ export default function AuthForm({ type }: AuthFormProps) {
           body: JSON.stringify({ email, password })
         });
         const data = await res.json();
-        console.log('Login response:', data);
         if (data.token) {
+          const user = {
+            id: data.user.id,
+            name: data.user.username, // map username thành name
+            email: data.user.email,
+            avatar: data.user.avatar || null
+          };
+          localStorage.setItem('user', JSON.stringify(user));
           localStorage.setItem('token', data.token);
-          router.push('/dashboard'); // chuyển trang sau khi login thành công
+          router.push('/dashboard');
+
+
         } else {
           setErrorMsg(data.message || 'Login failed');
         }

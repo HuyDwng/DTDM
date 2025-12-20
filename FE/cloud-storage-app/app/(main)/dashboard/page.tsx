@@ -1,101 +1,160 @@
-"use client";
-import React, { useState, useEffect } from "react";
-import "./dashboard.css";
+'use client'
+import React, { useEffect, useState } from 'react'
+import './dashboard.css'
+import { useRouter } from 'next/navigation'
+
+interface FileType {
+  id: number
+  name: string
+  size: string
+  createdAt: string
+  ownerName: string
+  type: 'file' | 'folder'
+  previewUrl?: string
+}
 
 export default function Dashboard() {
-  // Toggle dropdown menu với auto positioning
-  const toggleDropdown = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    const dropdown = e.currentTarget.nextElementSibling as HTMLElement;
+  const router = useRouter()
 
-    // Đóng tất cả dropdown khác
-    document.querySelectorAll(".dropdown-menu.active").forEach((menu) => {
-      if (menu !== dropdown) {
-        menu.classList.remove("active");
-      }
-    });
+  const [files, setFiles] = useState<FileType[]>([])
+  const [openMenu, setOpenMenu] = useState<{
+    fileId: number
+    top: number
+    left: number
+  } | null>(null)
 
-    if (dropdown) {
-      // Nếu đang đóng thì mở và tính vị trí
-      if (!dropdown.classList.contains("active")) {
-        const btnRect = e.currentTarget.getBoundingClientRect();
-        const dropdownWidth = 220;
-        const windowWidth = window.innerWidth;
-        const windowHeight = window.innerHeight;
-
-        // Tính vị trí top
-        let top = btnRect.bottom + window.scrollY + 8;
-
-        // Kiểm tra nếu dropdown vượt quá chiều cao màn hình
-        if (btnRect.bottom + 300 > windowHeight) {
-          top = btnRect.top + window.scrollY - 300;
-        }
-
-        // Tính vị trí left
-        let left = btnRect.right + window.scrollX - dropdownWidth;
-
-        if (btnRect.right + 100 > windowWidth) {
-          left = btnRect.left + window.scrollX - dropdownWidth - 10;
-        }
-
-        if (left < 10) {
-          left = btnRect.left + window.scrollX;
-        }
-
-        dropdown.style.top = `${top}px`;
-        dropdown.style.left = `${left}px`;
+  // ================= FETCH FILES =================
+  useEffect(() => {
+    const fetchFiles = async () => {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        router.push('/login')
+        return
       }
 
-      dropdown.classList.toggle("active");
+      const res = await fetch('http://localhost:5000/api/files/my-files', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      const data = await res.json()
+      setFiles(data)
     }
-  };
+
+    fetchFiles()
+  }, [router])
+
+  // ================= CLICK 3 DOTS =================
+  const handleMenuClick = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    fileId: number
+  ) => {
+    e.stopPropagation()
+
+    const rect = e.currentTarget.getBoundingClientRect()
+
+    setOpenMenu(prev =>
+      prev?.fileId === fileId
+        ? null
+        : {
+            fileId,
+            top: rect.bottom + 6,
+            left: rect.right - 220,
+          }
+    )
+  }
+
+  // ================= CLOSE MENU =================
+  useEffect(() => {
+    const closeMenu = () => setOpenMenu(null)
+    document.addEventListener('click', closeMenu)
+    return () => document.removeEventListener('click', closeMenu)
+  }, [])
+
+  // ================= ACTION =================
+  const handleAction = (file: FileType, action: string) => {
+    console.log(action, file)
+
+    if (action === 'delete') {
+      setFiles(prev => prev.filter(f => f.id !== file.id))
+    }
+
+    setOpenMenu(null)
+  }
+
+  const getFileIcon = (file: FileType) => {
+    if (file.type === 'folder') return '/images/folder.png'
+    if (file.name.endsWith('.pdf')) return '/images/file-pdf.png'
+    if (file.name.endsWith('.doc') || file.name.endsWith('.docx'))
+      return '/images/word-file.png'
+    if (file.name.match(/\.(jpg|png|jpeg)$/))
+      return file.previewUrl || '/images/image-file.png'
+    return '/images/file.png'
+  }
 
   return (
-    <>
-
-      <main className="home-content">
-        <div className="files-grid">
-          {/* File Card 1 */}
-          <div className="file-card">
+    <main className="home-content">
+      <div className="files-grid">
+        {files.map(file => (
+          <div key={file.id} className="file-card">
             <div className="file-preview">
-              <img src="/images/word-file.png" alt="Word Document" />
+              <img src={getFileIcon(file)} alt={file.name} />
             </div>
+
             <div className="file-info">
               <div className="file-header">
-                <h3 className="file-name">Project Proposal.docx</h3>
-                <button className="menu-btn" onClick={toggleDropdown}>
+                <h3 className="file-name">{file.name}</h3>
+
+                {/* ===== 3 DOTS ===== */}
+                <button
+                  className="menu-btn"
+                  onClick={e => handleMenuClick(e, file.id)}
+                >
                   <i className="bi bi-three-dots-vertical"></i>
                 </button>
-                <div className="dropdown-menu">
-                  <ul>
-                    <li>
-                      <i className="bi bi-eye"></i>
-                      <span>View</span>
-                    </li>
-                    <li>
-                      <i className="bi bi-download"></i>
-                      <span>Download</span>
-                    </li>
-                    <li>
-                      <i className="bi bi-share"></i>
-                      <span>Share</span>
-                    </li>
-                    <li>
-                      <i className="bi bi-pencil"></i>
-                      <span>Rename</span>
-                    </li>
-                    <li>
-                      <i className="bi bi-star"></i>
-                      <span>Add to Starred</span>
-                    </li>
-                    <li className="divider"></li>
-                    <li className="danger">
-                      <i className="bi bi-trash"></i>
-                      <span>Delete</span>
-                    </li>
-                  </ul>
-                </div>
+
+                {/* ===== DROPDOWN ===== */}
+                {openMenu?.fileId === file.id && (
+                  <div
+                    className="dropdown-menu active"
+                    style={{
+                      position: 'fixed',
+                      top: openMenu.top,
+                      left: openMenu.left,
+                    }}
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <ul>
+                      <li onClick={() => handleAction(file, 'view')}>
+                        <i className="bi bi-eye"></i>
+                        <span>View</span>
+                      </li>
+                      <li onClick={() => handleAction(file, 'download')}>
+                        <i className="bi bi-download"></i>
+                        <span>Download</span>
+                      </li>
+                      <li onClick={() => handleAction(file, 'share')}>
+                        <i className="bi bi-share"></i>
+                        <span>Share</span>
+                      </li>
+                      <li onClick={() => handleAction(file, 'rename')}>
+                        <i className="bi bi-pencil"></i>
+                        <span>Rename</span>
+                      </li>
+                      <li className="divider"></li>
+                      <li
+                        className="danger"
+                        onClick={() => handleAction(file, 'delete')}
+                      >
+                        <i className="bi bi-trash"></i>
+                        <span>Delete</span>
+                      </li>
+                    </ul>
+                  </div>
+                )}
               </div>
+
               <div className="file-meta">
                 <div className="owner">
                   <img
@@ -103,239 +162,16 @@ export default function Dashboard() {
                     alt="Owner"
                     className="owner-avatar"
                   />
-                  <span>John Doe</span>
+                  <span>{file.ownerName}</span>
                 </div>
-                <span className="file-date">2 hours ago</span>
+                <span className="file-date">{file.createdAt}</span>
               </div>
-              <div className="file-size">1.2 MB</div>
-            </div>
-          </div>
 
-          {/* File Card 2 */}
-          <div className="file-card">
-            <div className="file-preview">
-              <img src="/images/file-pdf.png" alt="PDF Document" />
-            </div>
-            <div className="file-info">
-              <div className="file-header">
-                <h3 className="file-name">Report 2024.pdf</h3>
-                <button className="menu-btn" onClick={toggleDropdown}>
-                  <i className="bi bi-three-dots-vertical"></i>
-                </button>
-                <div className="dropdown-menu">
-                  <ul>
-                    <li>
-                      <i className="bi bi-eye"></i>
-                      <span>View</span>
-                    </li>
-                    <li>
-                      <i className="bi bi-download"></i>
-                      <span>Download</span>
-                    </li>
-                    <li>
-                      <i className="bi bi-share"></i>
-                      <span>Share</span>
-                    </li>
-                    <li>
-                      <i className="bi bi-pencil"></i>
-                      <span>Rename</span>
-                    </li>
-                    <li>
-                      <i className="bi bi-star"></i>
-                      <span>Add to Starred</span>
-                    </li>
-                    <li className="divider"></li>
-                    <li className="danger">
-                      <i className="bi bi-trash"></i>
-                      <span>Delete</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-              <div className="file-meta">
-                <div className="owner">
-                  <img
-                    src="/images/pic1.png"
-                    alt="Owner"
-                    className="owner-avatar"
-                  />
-                  <span>John Doe</span>
-                </div>
-                <span className="file-date">5 hours ago</span>
-              </div>
-              <div className="file-size">3.5 MB</div>
+              <div className="file-size">{file.size}</div>
             </div>
           </div>
-
-          {/* File Card 3 */}
-          <div className="file-card">
-            <div className="file-preview">
-              <img src="/images/vacation.jpg" alt="Image" />
-            </div>
-            <div className="file-info">
-              <div className="file-header">
-                <h3 className="file-name">Vacation Photo.jpg</h3>
-                <button className="menu-btn" onClick={toggleDropdown}>
-                  <i className="bi bi-three-dots-vertical"></i>
-                </button>
-                <div className="dropdown-menu">
-                  <ul>
-                    <li>
-                      <i className="bi bi-eye"></i>
-                      <span>View</span>
-                    </li>
-                    <li>
-                      <i className="bi bi-download"></i>
-                      <span>Download</span>
-                    </li>
-                    <li>
-                      <i className="bi bi-share"></i>
-                      <span>Share</span>
-                    </li>
-                    <li>
-                      <i className="bi bi-pencil"></i>
-                      <span>Rename</span>
-                    </li>
-                    <li>
-                      <i className="bi bi-star"></i>
-                      <span>Add to Starred</span>
-                    </li>
-                    <li className="divider"></li>
-                    <li className="danger">
-                      <i className="bi bi-trash"></i>
-                      <span>Delete</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-              <div className="file-meta">
-                <div className="owner">
-                  <img
-                    src="/images/pic1.png"
-                    alt="Owner"
-                    className="owner-avatar"
-                  />
-                  <span>John Doe</span>
-                </div>
-                <span className="file-date">Yesterday</span>
-              </div>
-              <div className="file-size">5.8 MB</div>
-            </div>
-          </div>
-
-          {/* File Card 4 */}
-          <div className="file-card">
-            <div className="file-preview">
-              <img src="/images/word-file.png" alt="Word Document" />
-            </div>
-            <div className="file-info">
-              <div className="file-header">
-                <h3 className="file-name">Project Proposal.docx</h3>
-                <button className="menu-btn" onClick={toggleDropdown}>
-                  <i className="bi bi-three-dots-vertical"></i>
-                </button>
-                <div className="dropdown-menu">
-                  <ul>
-                    <li>
-                      <i className="bi bi-eye"></i>
-                      <span>View</span>
-                    </li>
-                    <li>
-                      <i className="bi bi-download"></i>
-                      <span>Download</span>
-                    </li>
-                    <li>
-                      <i className="bi bi-share"></i>
-                      <span>Share</span>
-                    </li>
-                    <li>
-                      <i className="bi bi-pencil"></i>
-                      <span>Rename</span>
-                    </li>
-                    <li>
-                      <i className="bi bi-star"></i>
-                      <span>Add to Starred</span>
-                    </li>
-                    <li className="divider"></li>
-                    <li className="danger">
-                      <i className="bi bi-trash"></i>
-                      <span>Delete</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-              <div className="file-meta">
-                <div className="owner">
-                  <img
-                    src="/images/pic1.png"
-                    alt="Owner"
-                    className="owner-avatar"
-                  />
-                  <span>John Doe</span>
-                </div>
-                <span className="file-date">2 hours ago</span>
-              </div>
-              <div className="file-size">1.2 MB</div>
-            </div>
-          </div>
-
-          {/* File Card 5 */}
-          <div className="file-card">
-            <div className="file-preview">
-              <img src="/images/word-file.png" alt="Word Document" />
-            </div>
-            <div className="file-info">
-              <div className="file-header">
-                <h3 className="file-name">Project Proposal.docx</h3>
-                <button className="menu-btn" onClick={toggleDropdown}>
-                  <i className="bi bi-three-dots-vertical"></i>
-                </button>
-                <div className="dropdown-menu">
-                  <ul>
-                    <li>
-                      <i className="bi bi-eye"></i>
-                      <span>View</span>
-                    </li>
-                    <li>
-                      <i className="bi bi-download"></i>
-                      <span>Download</span>
-                    </li>
-                    <li>
-                      <i className="bi bi-share"></i>
-                      <span>Share</span>
-                    </li>
-                    <li>
-                      <i className="bi bi-pencil"></i>
-                      <span>Rename</span>
-                    </li>
-                    <li>
-                      <i className="bi bi-star"></i>
-                      <span>Add to Starred</span>
-                    </li>
-                    <li className="divider"></li>
-                    <li className="danger">
-                      <i className="bi bi-trash"></i>
-                      <span>Delete</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-              <div className="file-meta">
-                <div className="owner">
-                  <img
-                    src="/images/pic1.png"
-                    alt="Owner"
-                    className="owner-avatar"
-                  />
-                  <span>John Doe</span>
-                </div>
-                <span className="file-date">2 hours ago</span>
-              </div>
-              <div className="file-size">1.2 MB</div>
-            </div>
-          </div>
-        </div>
-      </main>
-    </>
-  );
+        ))}
+      </div>
+    </main>
+  )
 }

@@ -8,8 +8,9 @@ const sequelize = new Sequelize(
   process.env.MYSQL_PASSWORD, 
   {
     host: process.env.MYSQL_HOST,
+    port: parseInt(process.env.MYSQL_PORT) || 3306, // thêm port
     dialect: 'mysql',
-    logging: false,
+    logging: false, // true nếu muốn debug câu lệnh SQL
   }
 );
 
