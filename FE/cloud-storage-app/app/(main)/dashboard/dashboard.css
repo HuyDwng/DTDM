@@ -725,9 +725,9 @@ body.dark-mode .theme-btn.active {
     position: relative;
 }
 
-.file-card:hover {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-    transform: translateY(-2px);
+.file-card:hover .menu-btn,
+.menu-btn:focus {
+  opacity: 1;
 }
 
 /* File Preview */
@@ -758,7 +758,7 @@ body.dark-mode .theme-btn.active {
 .file-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     margin-bottom: 10px;
     position: relative;
 }
@@ -784,8 +784,9 @@ body.dark-mode .theme-btn.active {
     cursor: pointer;
     padding: 5px;
     border-radius: 50%;
-    transition: all 0.3s ease;
+    transition: opacity 0.2s ease;
     flex-shrink: 0;
+    opacity: 0.7;
 }
 
 .menu-btn:hover {

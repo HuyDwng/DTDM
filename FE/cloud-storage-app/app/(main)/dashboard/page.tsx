@@ -1,7 +1,8 @@
 'use client'
+
 import React, { useEffect, useState } from 'react'
-import './dashboard.css'
 import { useRouter } from 'next/navigation'
+import './dashboard.css'
 
 interface FileType {
   id: number
@@ -27,19 +28,33 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchFiles = async () => {
       const token = localStorage.getItem('token')
+
       if (!token) {
         router.push('/login')
         return
       }
 
-      const res = await fetch('http://localhost:5000/api/files/my-files', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      try {
+        const res = await fetch(
+          'http://localhost:5000/api/files/my-files',
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
 
-      const data = await res.json()
-      setFiles(data)
+        if (res.status === 401) {
+          localStorage.removeItem('token')
+          router.push('/login')
+          return
+        }
+
+        const data = await res.json()
+        setFiles(data)
+      } catch (err) {
+        console.error('Fetch files error:', err)
+      }
     }
 
     fetchFiles()
@@ -54,35 +69,66 @@ export default function Dashboard() {
 
     const rect = e.currentTarget.getBoundingClientRect()
 
-    setOpenMenu(prev =>
-      prev?.fileId === fileId
-        ? null
-        : {
-            fileId,
-            top: rect.bottom + 6,
-            left: rect.right - 220,
-          }
-    )
+    requestAnimationFrame(() => {
+      const dropdownWidth = 220
+      const dropdownHeight = 260
+
+      let top = rect.bottom + 8
+      let left = rect.right - dropdownWidth
+
+      if (rect.bottom + dropdownHeight > window.innerHeight) {
+        top = rect.top - dropdownHeight - 8
+      }
+
+      if (left < 10) {
+        left = rect.left
+      }
+
+      setOpenMenu(prev =>
+        prev?.fileId === fileId
+          ? null
+          : {
+              fileId,
+              top,
+              left,
+            }
+      )
+    })
   }
 
   // ================= CLOSE MENU =================
   useEffect(() => {
-    const closeMenu = () => setOpenMenu(null)
-    document.addEventListener('click', closeMenu)
-    return () => document.removeEventListener('click', closeMenu)
+    const closeMenu = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+
+      if (
+        target.closest('.menu-btn') ||
+        target.closest('.dropdown-menu')
+      ) {
+        return
+      }
+
+      setOpenMenu(null)
+    }
+
+    document.addEventListener('mousedown', closeMenu)
+    return () =>
+      document.removeEventListener('mousedown', closeMenu)
   }, [])
 
   // ================= ACTION =================
   const handleAction = (file: FileType, action: string) => {
-    console.log(action, file)
+    console.log('ACTION:', action, 'FILE:', file)
 
     if (action === 'delete') {
+      // Tạm thời chỉ xoá UI
       setFiles(prev => prev.filter(f => f.id !== file.id))
     }
 
     setOpenMenu(null)
   }
 
+  // ================= FILE ICON =================
   const getFileIcon = (file: FileType) => {
     if (file.type === 'folder') return '/images/folder.png'
     if (file.name.endsWith('.pdf')) return '/images/file-pdf.png'
@@ -93,15 +139,18 @@ export default function Dashboard() {
     return '/images/file.png'
   }
 
+  // ================= RENDER =================
   return (
     <main className="home-content">
       <div className="files-grid">
         {files.map(file => (
           <div key={file.id} className="file-card">
+            {/* ===== PREVIEW ===== */}
             <div className="file-preview">
               <img src={getFileIcon(file)} alt={file.name} />
             </div>
 
+            {/* ===== INFO ===== */}
             <div className="file-info">
               <div className="file-header">
                 <h3 className="file-name">{file.name}</h3>
@@ -109,7 +158,9 @@ export default function Dashboard() {
                 {/* ===== 3 DOTS ===== */}
                 <button
                   className="menu-btn"
-                  onClick={e => handleMenuClick(e, file.id)}
+                  onClick={e =>
+                    handleMenuClick(e, file.id)
+                  }
                 >
                   <i className="bi bi-three-dots-vertical"></i>
                 </button>
@@ -119,33 +170,55 @@ export default function Dashboard() {
                   <div
                     className="dropdown-menu active"
                     style={{
-                      position: 'fixed',
                       top: openMenu.top,
                       left: openMenu.left,
                     }}
                     onClick={e => e.stopPropagation()}
                   >
                     <ul>
-                      <li onClick={() => handleAction(file, 'view')}>
+                      <li
+                        onClick={() =>
+                          handleAction(file, 'view')
+                        }
+                      >
                         <i className="bi bi-eye"></i>
                         <span>View</span>
                       </li>
-                      <li onClick={() => handleAction(file, 'download')}>
+
+                      <li
+                        onClick={() =>
+                          handleAction(file, 'download')
+                        }
+                      >
                         <i className="bi bi-download"></i>
                         <span>Download</span>
                       </li>
-                      <li onClick={() => handleAction(file, 'share')}>
+
+                      <li
+                        onClick={() =>
+                          handleAction(file, 'share')
+                        }
+                      >
                         <i className="bi bi-share"></i>
                         <span>Share</span>
                       </li>
-                      <li onClick={() => handleAction(file, 'rename')}>
+
+                      <li
+                        onClick={() =>
+                          handleAction(file, 'rename')
+                        }
+                      >
                         <i className="bi bi-pencil"></i>
                         <span>Rename</span>
                       </li>
+
                       <li className="divider"></li>
+
                       <li
                         className="danger"
-                        onClick={() => handleAction(file, 'delete')}
+                        onClick={() =>
+                          handleAction(file, 'delete')
+                        }
                       >
                         <i className="bi bi-trash"></i>
                         <span>Delete</span>
@@ -164,7 +237,9 @@ export default function Dashboard() {
                   />
                   <span>{file.ownerName}</span>
                 </div>
-                <span className="file-date">{file.createdAt}</span>
+                <span className="file-date">
+                  {file.createdAt}
+                </span>
               </div>
 
               <div className="file-size">{file.size}</div>

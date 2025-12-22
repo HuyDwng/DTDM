@@ -4,31 +4,21 @@ const cors = require('cors');
 dotenv.config();
 
 const { connectDB, sequelize } = require('./config/db');
+const minioClient = require('./config/minio');
+
 const app = express();
-
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true
-}));
-
+app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(express.json());
 
 // Connect MySQL
 connectDB();
 
-// Sync DB
-sequelize.sync({ alter: true }).then(() => {
-  console.log('All models synced');
-});
+// Sync models
+sequelize.sync({ alter: true }).then(() => console.log('All models synced'));
 
-// ===== MINIO TEST =====
-const minioClient = require('./config/minio');
-
+// MinIO bucket check
 minioClient.bucketExists(process.env.MINIO_BUCKET, (err, exists) => {
-  if (err) {
-    console.error('MinIO error:', err);
-    return;
-  }
+  if (err) return console.error('MinIO error:', err);
   if (!exists) {
     minioClient.makeBucket(process.env.MINIO_BUCKET, 'us-east-1', err => {
       if (err) return console.error(err);

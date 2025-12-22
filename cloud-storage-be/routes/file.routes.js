@@ -30,13 +30,13 @@ router.post('/upload', authenticate, upload.array('file'), async (req, res) => {
 
             console.log('Uploading file:', file.originalname, '=>', fileName);
 
-            // // Upload lên MinIO (bật khi cần)
-            // await minioClient.putObject(
-            //     process.env.MINIO_BUCKET,
-            //     fileName,
-            //     file.buffer,
-            //     { 'Content-Type': file.mimetype }
-            // );
+            // Upload lên MinIO (bật khi cần)
+            await minioClient.putObject(
+                process.env.MINIO_BUCKET,
+                fileName,
+                file.buffer,
+                { 'Content-Type': file.mimetype }
+            );
 
             // Lưu metadata vào MySQL với userId từ token
             const savedFile = await File.create({
