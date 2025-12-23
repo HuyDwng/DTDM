@@ -142,6 +142,7 @@ export default function Dashboard() {
   // ================= RENDER =================
   return (
     <main className="home-content">
+    {files.length > 0 && (
       <div className="files-grid">
         {files.map(file => (
           <div key={file.id} className="file-card">
@@ -247,6 +248,7 @@ export default function Dashboard() {
           </div>
         ))}
       </div>
+    )}
     </main>
   )
 }

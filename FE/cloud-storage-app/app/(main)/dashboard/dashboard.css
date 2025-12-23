@@ -550,7 +550,7 @@ body.dark-mode .theme-btn.active {
     margin-top: 20px;
 }
 
-.sidebar ul li{
+.sidebar ul li, .sidebar .view-files-btn{
     position: relative;
     height: 50px;
     width: 100%;
@@ -559,7 +559,7 @@ body.dark-mode .theme-btn.active {
     list-style: none;
 }
 
-.sidebar ul li a{
+.sidebar ul li a, .sidebar .view-files-btn a{
     color: var(--purple);
     display: flex;
     align-items: center;
@@ -570,7 +570,7 @@ body.dark-mode .theme-btn.active {
     transition: all .4s ease;
 }
 
-.sidebar ul li a:hover{
+.sidebar ul li a:hover, .sidebar .view-files-btn a:hover{
     background: var(--purple);
     color: #ffffff;
 }
@@ -587,9 +587,18 @@ body.dark-mode .theme-btn.active {
 
 .sidebar .storage-widget {
     visibility: hidden;
+    margin-top: 10px;
 }
 
 .sidebar.active .storage-widget {
+    visibility: visible;
+}
+
+.sidebar .view-files-btn {
+    visibility: hidden;
+}
+
+.sidebar.active .view-files-btn {
     visibility: visible;
 }
 

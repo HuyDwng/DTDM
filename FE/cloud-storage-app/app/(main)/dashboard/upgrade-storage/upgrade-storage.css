@@ -1,0 +1,186 @@
+.upgrade-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.upgrade-header h1 {
+  font-size: 20px;
+  color: #666;
+  font-weight: 500;
+  margin: 0;
+}
+
+.pricing-card{
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+.pricing-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.pricing-card.selected {
+  border-color: #7c3aed;
+  box-shadow: 0 8px 30px rgba(124, 58, 237, 0.3);
+}
+
+.pricing-card.current {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.pricing-card.current:hover {
+  transform: none;
+}
+
+/* Border colors */
+.pricing-card.blue {
+  border-top: 5px solid #3b82f6;
+}
+
+.pricing-card.green {
+  border-top: 5px solid #22c55e;
+}
+
+.pricing-card.orange {
+  border-top: 5px solid #f97316;
+}
+
+.popular-badge {
+  position: absolute;
+  top: -15px;
+  right: 20px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  padding: 6px 20px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+}
+
+.plan-header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding-bottom: 25px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.plan-header h3 {
+  font-size: 18px;
+  color: #6b7280;
+  font-weight: 500;
+  margin: 0 0 15px 0;
+}
+
+.plan-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #3b82f6;
+  margin-bottom: 5px;
+}
+
+.pricing-card.green .plan-title {
+  color: #22c55e;
+}
+
+.pricing-card.orange .plan-title {
+  color: #f97316;
+}
+
+.plan-storage {
+  font-size: 16px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.features-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 30px 0;
+  flex-grow: 1;
+
+}
+
+.features-list li {
+  padding: 12px 0;
+  color: #4b5563;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px;
+}
+
+.features-list li i {
+  color: #22c55e;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.upgrade-btn-wrapper {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 50px;
+}
+
+.upgrade-btn {
+  width: 70%;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 12px;
+  background: #3b82f6;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.upgrade-btn:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+}
+
+.upgrade-btn.current {
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.upgrade-btn.current:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Dark mode */
+.dark-mode .pricing-card {
+  background: var(--card-dark);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .pricing-card:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.dark-mode .plan-header {
+  border-bottom-color: #374151;
+}
+
+.dark-mode .plan-header h3 {
+  color: #9ca3af;
+}
+
+.dark-mode .features-list li {
+  color: #d1d5db;
+}
+
+.dark-mode .upgrade-header h1 {
+  color: #9ca3af;
+}

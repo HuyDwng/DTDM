@@ -519,6 +519,16 @@ const handleUpload = async () => {
                             
                     </div>
                 </div>
+
+                <button 
+                    onClick={() => router.push('/dashboard/upgrade-storage')} 
+                    className="view-files-btn"
+                >
+                    <a>
+                        <i className="bi bi-cart-plus"></i>
+                        <span className="link-name">Mua thêm bộ nhớ</span>
+                    </a>
+                </button>
             </aside>
         )}
 
@@ -680,12 +690,14 @@ const handleUpload = async () => {
               </div>
             </div>
         )}
-            <div
+            {/* <div
             className="dashboard-page-wrapper"
             onClick={(e) => e.stopPropagation()}
             >
             {children}
-            </div>
+            </div> */}
+
+            {children}
 
         </div>
         </>
