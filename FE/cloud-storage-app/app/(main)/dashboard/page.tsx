@@ -116,17 +116,112 @@ export default function Dashboard() {
       document.removeEventListener('mousedown', closeMenu)
   }, [])
 
-  // ================= ACTION =================
-  const handleAction = (file: FileType, action: string) => {
-    console.log('ACTION:', action, 'FILE:', file)
+// ================= ACTION =================
+const handleAction = async (file: FileType, action: string) => {
+  const token = localStorage.getItem('token');
+  if (!token) return alert('Bạn chưa login');
 
-    if (action === 'delete') {
-      // Tạm thời chỉ xoá UI
-      setFiles(prev => prev.filter(f => f.id !== file.id))
-    }
-
-    setOpenMenu(null)
+  // ===== VIEW =====
+  if (action === 'view') {
+    // Mở route public kèm token query
+    window.open(
+      `http://localhost:5000/api/files/${file.id}/view-public?token=${token}`,
+      '_blank'
+    );
   }
+
+  // ===== DOWNLOAD =====
+if (action === 'download') {
+  const token = localStorage.getItem('token');
+  if (!token) return alert('Bạn chưa login');
+
+  // Gọi route download-public kèm token
+  window.open(
+    `http://localhost:5000/api/files/${file.id}/download-public?token=${token}`,
+    '_blank'
+  );
+}
+
+
+// ===== SHARE =====
+if (action === 'share') {
+  const token = localStorage.getItem('token');
+  if (!token) return alert('Bạn chưa login');
+
+  try {
+    // Gọi API share trên BE, trả về presigned URL
+    const res = await fetch(
+      `http://localhost:5000/api/files/${file.id}/share`,
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+
+    const data = await res.json();
+    if (data.shareUrl) {
+      navigator.clipboard.writeText(data.shareUrl);
+      alert('Link chia sẻ đã được copy! Bạn có thể gửi link này qua FB, email, ...');
+    } else {
+      alert('Không lấy được link chia sẻ');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Lỗi khi chia sẻ file');
+  }
+}
+
+  // ===== RENAME =====
+if (action === 'rename') {
+  const newName = prompt('Nhập tên mới', file.name);
+  if (!newName || newName.trim() === file.name) return;
+
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`http://localhost:5000/api/files/${file.id}/rename`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ newName: newName.trim() }),
+    });
+
+    if (!res.ok) throw new Error('Rename failed');
+
+    const updated = await res.json();
+    setFiles(prev =>
+      prev.map(f => (f.id === file.id ? { ...f, name: updated.file.name } : f))
+    );
+    alert('Đổi tên file thành công!');
+  } catch (err) {
+    console.error(err);
+    alert('Đổi tên file thất bại');
+  }
+}
+
+// ===== DELETE =====
+if (action === 'delete') {
+  if (!confirm(`Bạn chắc chắn muốn xoá "${file.name}"?`)) return;
+
+  const token = localStorage.getItem('token');
+  if (!token) return alert('Bạn chưa login');
+
+  fetch(`http://localhost:5000/api/files/${file.id}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.message);
+    setFiles(prev => prev.filter(f => f.id !== file.id));
+  })
+  .catch(err => console.error(err));
+}
+
+};
+
 
   // ================= FILE ICON =================
   const getFileIcon = (file: FileType) => {

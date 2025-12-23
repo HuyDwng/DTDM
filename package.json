@@ -16,5 +16,8 @@
     "url": "https://github.com/HuyDwng/DTDM/issues"
   },
   "homepage": "https://github.com/HuyDwng/DTDM#readme",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "minio": "^8.0.6"
+  }
 }
