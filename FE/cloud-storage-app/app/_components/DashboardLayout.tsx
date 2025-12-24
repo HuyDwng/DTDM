@@ -395,6 +395,11 @@ const handleUpload = async () => {
                         <span>Edit Profile</span>
                     </li>
 
+                    <li onClick={() => router.push('/dashboard/billing')}>
+                        <i className="bi bi-credit-card"></i>
+                        <span>Billing</span>
+                    </li>
+
                     <li className="theme-toggle">
                         <i className="bi bi-palette"></i>
                         <span>Theme</span>
@@ -452,7 +457,7 @@ const handleUpload = async () => {
                 </li>
 
                 <li>
-                    <a href="/dashboard/files">
+                    <a href="/dashboard">
                     <i className="bi bi-folder"></i>
                     <span className="link-name">My Files</span>
                     </a>

@@ -13,8 +13,8 @@ app.use(express.json());
 // Connect MySQL
 connectDB();
 
-// Sync models
-sequelize.sync({ alter: true }).then(() => console.log('All models synced'));
+// Sync models (không alter để tránh lỗi index)
+sequelize.sync().then(() => console.log('All models synced'));
 
 // MinIO bucket check
 minioClient.bucketExists(process.env.MINIO_BUCKET, (err, exists) => {
@@ -32,6 +32,8 @@ minioClient.bucketExists(process.env.MINIO_BUCKET, (err, exists) => {
 // Routes
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/files', require('./routes/file.routes'));
+app.use('/api/billing', require('./routes/billing.routes'));
+app.use('/api/payment', require('./routes/payment.routes'));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

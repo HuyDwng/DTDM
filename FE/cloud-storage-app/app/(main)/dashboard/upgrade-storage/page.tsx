@@ -1,11 +1,42 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import './upgrade-storage.css'
+
+interface BackendPlan {
+  id: number;
+  name: string;
+  duration: string;
+  price: number;
+  storageLimit: number;
+}
 
 export default function UpgradeStoragePage() {
   const router = useRouter()
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
+  const [backendPlans, setBackendPlans] = useState<BackendPlan[]>([])
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    fetchPlans()
+  }, [])
+
+  const fetchPlans = async () => {
+    try {
+      const res = await fetch('http://localhost:5000/api/billing/plans')
+      const data = await res.json()
+      if (data.success) {
+        setBackendPlans(data.data)
+      }
+    } catch (error) {
+      console.error('Error fetching plans:', error)
+    }
+  }
+
+  const getPlanIdFromBackend = (planType: string): number | null => {
+    const plan = backendPlans.find(p => p.duration === planType)
+    return plan ? plan.id : null
+  }
 
   const plans = [
     {
@@ -22,31 +53,33 @@ export default function UpgradeStoragePage() {
       ],
       color: 'blue',
       buttonText: 'Gói Hiện Tại',
-      current: true
+      current: true,
+      backendType: 'free'
     },
     {
       id: 'basic',
-      name: 'Basic',
+      name: 'Tháng',
       title: '99.000đ',
-      storage: '50GB',
+      storage: '200GB',
       price: '99.000đ',
       pricePerMonth: '/Tháng',
       features: [
-        '50GB Storage',
+        '200GB Storage',
         'Email Support',
         'All File Types',
         'Priority Upload'
       ],
       color: 'blue',
-      buttonText: 'Nâng Cấp'
+      buttonText: 'Nâng Cấp',
+      backendType: 'monthly'
     },
     {
-      id: 'pro',
-      name: 'Premium',
-      title: '199.000đ',
+      id: 'premium',
+      name: 'Năm',
+      title: '999.000đ',
       storage: '200GB',
-      price: '199.000đ',
-      pricePerMonth: '/Tháng',
+      price: '999.000đ',
+      pricePerMonth: '/Năm',
       features: [
         '200GB Storage',
         '24/7 Support',
@@ -55,22 +88,8 @@ export default function UpgradeStoragePage() {
       ],
       color: 'green',
       buttonText: 'Nâng Cấp',
-      popular: true
-    },
-    {
-      id: 'enterprise',
-      name: 'Enterprise',
-      title: '499.000đ',
-      storage: '1TB',
-      price: '499.000đ',
-      pricePerMonth: '/Tháng',
-      features: [
-        '1TB Storage',
-        'Dedicated Support',
-        'All Features'
-      ],
-      color: 'orange',
-      buttonText: 'Nâng Cấp'
+      popular: true,
+      backendType: 'yearly'
     }
   ]
 
@@ -79,9 +98,50 @@ export default function UpgradeStoragePage() {
     setSelectedPlan(planId)
   }
 
-  const handleUpgrade = (planId: string) => {
+  const handleUpgrade = async (planId: string) => {
     if (planId === 'free') return
-    alert(`Nâng cấp gói: ${plans.find(p => p.id === planId)?.name}`)
+
+    const plan = plans.find(p => p.id === planId)
+    if (!plan) return
+
+    const backendPlanId = getPlanIdFromBackend(plan.backendType)
+    if (!backendPlanId) {
+      alert('Không tìm thấy gói dịch vụ. Vui lòng thử lại!')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const token = localStorage.getItem('token')
+      
+      if (!token) {
+        router.push('/login')
+        return
+      }
+      
+      const res = await fetch('http://localhost:5000/api/billing/upgrade', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ planId: backendPlanId })
+      })
+
+      const data = await res.json()
+      
+      if (data.success) {
+        // Redirect sang MoMo payment
+        window.location.href = data.data.paymentUrl
+      } else {
+        alert('Lỗi: ' + data.message)
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      alert('Có lỗi xảy ra. Vui lòng thử lại!')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -123,9 +183,9 @@ export default function UpgradeStoragePage() {
                   e.stopPropagation()
                   handleUpgrade(plan.id)
                 }}
-                disabled={plan.current}
+                disabled={plan.current || loading}
               >
-                {plan.buttonText}
+                {loading ? 'Đang xử lý...' : plan.buttonText}
               </button>
             </div>
 

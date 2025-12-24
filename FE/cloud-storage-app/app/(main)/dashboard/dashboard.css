@@ -717,10 +717,11 @@ body.dark-mode .theme-btn.active {
 
 /* Files Grid */
 .files-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 cột bằng nhau */
+    display: flex;
+    justify-content: center;
     gap: 20px;
     padding: 20px 0;
+    flex-wrap: wrap;
 }
 
 /* File Card */

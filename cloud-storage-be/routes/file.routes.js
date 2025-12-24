@@ -6,7 +6,8 @@ const { File } = require('../models/file.model'); // model lưu thông tin file
 const path = require('path');
 const crypto = require('crypto');
 const { getFilesByUser } = require('../controllers/file.controller');
-const authenticate = require('../middleware/auth.middleware'); // import đúng
+const authenticate = require('../middleware/auth.middleware');
+const { checkStorageQuota } = require('../middleware/storage.middleware');
 
 // Sử dụng memory storage của multer
 const storage = multer.memoryStorage();
@@ -14,7 +15,7 @@ const upload = multer({ storage });
 
 // Route upload file (FE gửi field name là 'file')
 // Thêm authenticate để biết user nào đang upload
-router.post('/upload', authenticate, upload.array('file'), async (req, res) => {
+router.post('/upload', authenticate, upload.array('file'), checkStorageQuota, async (req, res) => {
     try {
         const files = req.files;
         if (!files || files.length === 0) {
@@ -46,6 +47,9 @@ router.post('/upload', authenticate, upload.array('file'), async (req, res) => {
                 mimeType: file.mimetype,
                 userId: req.user.id // <-- dùng userId từ authenticate
             });
+
+            const billingService = require('../services/billing.service');
+            await billingService.updateStorageUsed(req.user.id, file.size);
 
             uploadedFiles.push(savedFile);
         }
